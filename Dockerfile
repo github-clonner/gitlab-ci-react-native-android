@@ -5,11 +5,11 @@
 # https://github.com/cuisines/gitlab-ci-react-native-android
 #
 
-FROM ubuntu:17.04
+FROM ubuntu:18.10
 MAINTAINER Sascha-Matthias Kulawik <sascha@kulawik.de>
 
-RUN echo "Android SDK 26.0.2"
-ENV VERSION_SDK_TOOLS "3859397"
+RUN echo "Android SDK 26.1.1"
+ENV VERSION_SDK_TOOLS "4333796"
 
 ENV ANDROID_HOME "/sdk"
 ENV PATH "$PATH:${ANDROID_HOME}/tools"
@@ -25,8 +25,9 @@ RUN apt-get -qq update && \
       libc6-i386 \
       lib32stdc++6 \
       lib32gcc1 \
-      lib32ncurses5 \
+      # lib32ncurses5 \
       lib32z1 \
+      gnupg2 \
       unzip \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -47,14 +48,14 @@ RUN mkdir -p /root/.android && \
   ${ANDROID_HOME}/tools/bin/sdkmanager --update 
 
 RUN while read -r package; do PACKAGES="${PACKAGES}${package} "; done < /sdk/packages.txt && \
-    ${ANDROID_HOME}/tools/bin/sdkmanager ${PACKAGES}
+    yes | ${ANDROID_HOME}/tools/bin/sdkmanager ${PACKAGES}
 
 RUN echo "Installing Yarn Deb Source" \
-	&& curl -sS http://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
+	&& curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 	&& echo "deb http://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 
 RUN echo "Installing Node.JS" \
-	&& curl -sL https://deb.nodesource.com/setup_7.x | bash -
+	&& curl -sL https://deb.nodesource.com/setup_10.x | bash -
 
 ENV BUILD_PACKAGES git yarn nodejs build-essential imagemagick librsvg2-bin ruby ruby-dev wget libcurl4-openssl-dev
 RUN echo "Installing Additional Libraries" \
@@ -66,7 +67,7 @@ RUN echo "Installing Fastlane 2.61.0" \
 	&& gem cleanup
 
 ENV GRADLE_HOME /opt/gradle
-ENV GRADLE_VERSION 3.3
+ENV GRADLE_VERSION 5.6.3
 
 RUN echo "Downloading Gradle" \
 	&& wget --no-verbose --output-document=gradle.zip "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip"
